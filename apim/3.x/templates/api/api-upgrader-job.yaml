@@ -1,9 +1,9 @@
 {{- if .Values.api.enabled -}}
 {{- $initContainers := .Values.initContainers -}}
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: {{ template "gravitee.api.fullname" . }}
+  name: {{ template "gravitee.api.fullname" . }}-pre-upgrade
   labels:
     app.kubernetes.io/name: {{ template "gravitee.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -20,27 +20,19 @@ metadata:
     {{ $key }}: {{ $value | quote }}
     {{- end }}
     {{- end }}
-  {{- if .Values.api.deployment.annotations}}
   annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+  {{- if .Values.api.deployment.annotations}}
     {{- range $key, $value := .Values.api.deployment.annotations }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
   {{- end }}
+
 spec:
-  {{- if .Values.api.deployment.revisionHistoryLimit }}
-  revisionHistoryLimit: {{ .Values.api.deployment.revisionHistoryLimit }}
-  {{- end }}
-  {{- if not .Values.api.autoscaling.enabled }}
-  replicas: {{ .Values.api.replicaCount }}
-  {{- end }}
-  strategy: {{ toYaml .Values.api.deployment.strategy | nindent 4 }}
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ template "gravitee.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/component: "{{ .Values.api.name }}"
   template:
     metadata:
+      name: {{ template "gravitee.api.fullname" . }}-pre-upgrade
       annotations:
         chaos.alpha.kubernetes.io/enabled: "{{ .Values.chaos.enabled }}"
         {{- if .Values.api.reloadOnConfigChange }}
@@ -63,6 +55,7 @@ spec:
         {{- end }}
         {{- end }}
     spec:
+      restartPolicy: Never
       serviceAccountName: {{ template "apim.serviceAccount" . }}
       affinity: {{ toYaml .Values.api.deployment.affinity | nindent 8 }}
       nodeSelector: {{ toYaml .Values.api.deployment.nodeSelector | nindent 8 }}
@@ -89,7 +82,7 @@ spec:
         {{- if and .Values.jdbc.driver (eq .Values.management.type "jdbc") }}
         - name: get-repository-jdbc-ext
           {{- toYaml .Values.initContainers | nindent 10 }}
-          command: ['sh', '-c', "mkdir -p /tmp/plugins-ext && cd /tmp/plugins-ext && wget  {{ .Values.jdbc.driver }}"]
+          command: ['sh', '-c', "mkdir -p /tmp/plugins-ext && cd /tmp/plugins-ext && wget {{ .Values.jdbc.driver }}"]
           volumeMounts:
             - name: graviteeio-apim-repository-jdbc-ext
               mountPath: /tmp/plugins-ext
@@ -100,7 +93,7 @@ spec:
         {{- end }}
       {{- end }}
       containers:
-        - name: {{ template "gravitee.api.fullname" . }}
+        - name: {{ template "gravitee.api.fullname" . }}-pre-upgrade
           image: "{{ .Values.api.image.repository }}:{{ default .Chart.AppVersion .Values.api.image.tag }}"
           imagePullPolicy: {{ .Values.api.image.pullPolicy }}
           securityContext: {{ toYaml ( .Values.api.securityContext | default .Values.api.deployment.securityContext ) | nindent 12 }}
@@ -109,7 +102,7 @@ spec:
               containerPort: {{ .Values.api.service.internalPort }}
           env:
             - name: upgrade.mode
-              value: "false"
+              value: "true"
             {{- if $plugins }}
             - name: GRAVITEE_PLUGINS_PATH_0
               value: '${gravitee.home}/plugins'
@@ -139,10 +132,6 @@ spec:
             {{- end }}
             - name: gravitee_cockpit_ssl_verifyHostname
               value: "{{ .Values.cockpit.ssl.verifyHostname }}"
-            {{- end }}
-            {{- if .Values.gateway.enabled }}
-            - name: portal.entrypoint
-              value: "https://{{ index .Values.gateway.ingress.hosts 0 }}{{ .Values.gateway.ingress.path }}"
             {{- end }}
 {{- if .Values.api.env | default .Values.api.deployment.extraEnvs }}
 {{ toYaml ( .Values.api.env | default .Values.api.deployment.extraEnvs ) | indent 12 }}
@@ -215,4 +204,4 @@ spec:
         {{- with .Values.api.extraVolumes }}
           {{- tpl . $ | nindent 8 }}
         {{- end }}
-{{- end -}}
+{{- end }}
