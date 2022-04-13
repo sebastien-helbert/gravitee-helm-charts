@@ -26,15 +26,21 @@ tests:
           value: /opt/graviteeio-management-api/cockpit
       - equal:
           path: spec.template.spec.containers[0].env[0].name
-          value: gravitee_cockpit_enabled
+          value: "upgrade.mode"
       - equal:
           path: spec.template.spec.containers[0].env[0].value
+          value: "false"
+      - equal:
+          path: spec.template.spec.containers[0].env[1].name
+          value: gravitee_cockpit_enabled
+      - equal:
+          path: spec.template.spec.containers[0].env[1].value
           value: "true"
       - equal:
-          path: spec.template.spec.containers[0].env[5].name
+          path: spec.template.spec.containers[0].env[6].name
           value: gravitee_cockpit_keystore_password
       - equal:
-          path: spec.template.spec.containers[0].env[5].value
+          path: spec.template.spec.containers[0].env[6].value
           value: "my_password"
 
   - it: Check cockpit deployment with keystore from secretKeyRef
@@ -63,15 +69,21 @@ tests:
           value: /opt/graviteeio-management-api/cockpit
       - equal:
           path: spec.template.spec.containers[0].env[0].name
-          value: gravitee_cockpit_enabled
+          value: "upgrade.mode"
       - equal:
           path: spec.template.spec.containers[0].env[0].value
+          value: "false"
+      - equal:
+          path: spec.template.spec.containers[0].env[1].name
+          value: gravitee_cockpit_enabled
+      - equal:
+          path: spec.template.spec.containers[0].env[1].value
           value: "true"
       - equal:
-          path: spec.template.spec.containers[0].env[5].name
+          path: spec.template.spec.containers[0].env[6].name
           value: gravitee_cockpit_keystore_password
       - equal:
-          path: spec.template.spec.containers[0].env[5].valueFrom
+          path: spec.template.spec.containers[0].env[6].valueFrom
           value:
             secretKeyRef:
               name: mysecret
@@ -103,15 +115,21 @@ tests:
           value: /opt/graviteeio-management-api/cockpit
       - equal:
           path: spec.template.spec.containers[0].env[0].name
-          value: gravitee_cockpit_enabled
+          value: "upgrade.mode"
       - equal:
           path: spec.template.spec.containers[0].env[0].value
+          value: "false"
+      - equal:
+          path: spec.template.spec.containers[0].env[1].name
+          value: gravitee_cockpit_enabled
+      - equal:
+          path: spec.template.spec.containers[0].env[1].value
           value: "true"
       - equal:
-          path: spec.template.spec.containers[0].env[5].name
+          path: spec.template.spec.containers[0].env[6].name
           value: gravitee_cockpit_keystore_password
       - equal:
-          path: spec.template.spec.containers[0].env[5].valueFrom
+          path: spec.template.spec.containers[0].env[6].valueFrom
           value:
             configMapKeyRef:
               name: special-config

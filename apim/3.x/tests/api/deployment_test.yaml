@@ -18,6 +18,8 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].env
           value:
+            - name: upgrade.mode
+              value: "false"
             - name: portal.entrypoint
               value: https://apim.example.com/gateway
       - isEmpty:
