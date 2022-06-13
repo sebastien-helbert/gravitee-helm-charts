@@ -1,0 +1,37 @@
+apiVersion: v1
+entries:
+  apim3:
+  - annotations:
+      artifacthub.io/changes: |
+        - Add support for keystore and truststore in MongoDB configuration
+        - Add version labels on pods
+    apiVersion: v1
+    appVersion: 3.15.8
+    created: "2022-06-13T11:13:11.057823+02:00"
+    dependencies:
+    - condition: elasticsearch.enabled
+      name: elasticsearch
+      repository: https://charts.helm.sh/stable
+      version: ^1.27.3
+    - condition: mongodb-replicaset.enabled
+      name: mongodb-replicaset
+      repository: https://charts.helm.sh/stable
+      version: ^3.10.1
+    description: Official Gravitee.io Helm chart for API Management 3.x
+    digest: 286ffa5e8026b9c82c8149ff8966f34ad63b85cfa9367db4a5dcdab87648c7a5
+    home: https://gravitee.io
+    icon: https://avatars2.githubusercontent.com/u/12655666?s=200&v=4
+    keywords:
+    - gravitee.io
+    - gravitee
+    - graviteeio
+    - API
+    - API Management
+    kubeVersion: '>=1.14.0-0'
+    name: apim3
+    sources:
+    - https://github.com/gravitee-io
+    urls:
+    - https://helm.gravitee.io/helm/apim3/apim3-3.1.45.tgz
+    version: 3.1.45
+generated: "2022-06-13T11:13:11.045808+02:00"
